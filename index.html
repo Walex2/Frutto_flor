@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frutto Forastero — Generador de Radar de Cata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#4F6045;--green-dark:#3A4A2C;
+  --orange:#F4643F;--maroon:#6C1916;
+  --sour:#D49C36;
+  --text:#1e1e1c;--muted:#5a5a57;--light:#f7f5f1;--border:#e4e0d8;
+}
+body{font-family:'Albert Sans',sans-serif;color:var(--text);background:#fff;line-height:1.6}
+
+header{background:var(--green-dark);color:#fff;padding:18px 40px;display:flex;align-items:center;gap:16px}
+header .logo-dot{width:28px;height:28px;background:var(--sour);border-radius:50%;flex-shrink:0}
+header h1{font-size:1.15rem;font-weight:400;color:#fff;letter-spacing:.04em}
+header p{font-size:.75rem;color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+
+main{max-width:1060px;margin:0 auto;padding:40px 32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+
+.chart-box{border-radius:16px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.18);transition:background .3s}
+.chart-box svg{width:100%;height:auto;display:block}
+
+.panel{background:#fff;border-radius:16px;padding:28px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.panel-title{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+.scheme-toggle{display:flex;gap:8px;margin-bottom:20px}
+.sch-btn{flex:1;border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:9px 8px;cursor:pointer;font-family:'Albert Sans',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.sch-btn .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sch-btn.verde .dot{background:#4F6045}
+.sch-btn.verde.active{border-color:#4F6045;border-width:2px;color:#4F6045;background:#edf3e8}
+.sch-btn.naranja .dot{background:#F4643F}
+.sch-btn.naranja.active{border-color:#F4643F;border-width:2px;color:#C0360F;background:#fef0ec}
+
+.ff-row{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.ff-dot{width:8px;height:8px;background:var(--sour);border-radius:50%;flex-shrink:0}
+.ff-row label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:84px;flex-shrink:0}
+.ff-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:#e8e5e0;border-radius:2px;outline:none;cursor:pointer}
+.ff-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--sour);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ff-row input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--sour);border-radius:50%;border:2px solid #fff}
+.ff-num{font-size:13px;font-weight:600;color:var(--sour);width:34px;text-align:right;flex-shrink:0}
+
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.score-row label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:84px}
+.score-row input[type=number]{width:88px;font-size:16px;font-weight:600;font-family:'Albert Sans',sans-serif;color:var(--sour);background:#fdf8f1;border:1.5px solid #e8d5b0;border-radius:8px;padding:6px 10px;text-align:right;outline:none;transition:border-color .15s}
+.score-row input[type=number]:focus{border-color:var(--sour)}
+.score-row .pt{font-size:.75rem;color:var(--muted)}
+.score-hint{font-size:.7rem;color:var(--muted);margin-left:96px;margin-bottom:20px}
+
+.gen-btn{width:100%;background:var(--green-dark);color:#fff;border:none;border-radius:8px;padding:11px 16px;font-size:.75rem;font-family:'Albert Sans',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.gen-btn:hover{opacity:.85}
+
+.code-section{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.code-section.visible{display:block}
+.code-label{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.code-box{display:flex;gap:8px;align-items:flex-start}
+.code-box textarea{flex:1;font-size:.72rem;font-family:'Courier New',monospace;background:#f5f5f3;border:1px solid var(--border);border-radius:6px;padding:10px;resize:vertical;min-height:90px;color:var(--muted);outline:none}
+.copy-btn{flex-shrink:0;background:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:.75rem;font-family:'Albert Sans',sans-serif;font-weight:500;cursor:pointer;color:var(--text);transition:background .15s}
+.copy-btn:hover{background:#f0f0ee}
+.copy-ok{font-size:.72rem;color:#3a7a45;font-weight:600;margin-top:6px;display:none}
+
+.palette-row{grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap}
+.chip{flex:1;min-width:100px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.chip-swatch{height:40px}
+.chip-info{padding:8px 10px;background:#fff}
+.chip-name{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chip-hex{font-size:.78rem;font-weight:600;color:var(--text);font-family:'Courier New',monospace}
+
+.instructions{grid-column:1/-1;background:#fff;border-radius:12px;padding:24px 28px;border:1px solid var(--border)}
+.instructions h2{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step-num{width:22px;height:22px;background:var(--green-dark);color:#fff;border-radius:50%;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:.82rem;line-height:1.55;color:var(--muted)}
+.step-text strong{display:block;font-weight:600;color:var(--text);margin-bottom:2px}
+
+@media(max-width:700px){main{grid-template-columns:1fr;padding:20px 16px}.steps{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-dot"></div>
+  <div>
+    <h1>Generador de Radar de Cata</h1>
+    <p>Frutto Forastero</p>
+  </div>
+</header>
+
+<main>
+  <div class="chart-box" id="chart-box" style="background:#4F6045">
+    <svg id="ff-svg" viewBox="-30 -10 620 578" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Perfil de cata</div>
+
+    <div class="scheme-toggle">
+      <button class="sch-btn verde active" onclick="setScheme('verde')">
+        <span class="dot"></span> Verde
+      </button>
+      <button class="sch-btn naranja" onclick="setScheme('naranja')">
+        <span class="dot"></span> Naranja
+      </button>
+    </div>
+
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-aroma">Aroma</label><input type="range" id="sl-aroma" min="6" max="10" step="0.25" value="7.5" oninput="sync('aroma')"><span class="ff-num" id="n-aroma">7,50</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-cuerpo">Cuerpo</label><input type="range" id="sl-cuerpo" min="6" max="10" step="0.25" value="7.75" oninput="sync('cuerpo')"><span class="ff-num" id="n-cuerpo">7,75</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-acidez">Acidez</label><input type="range" id="sl-acidez" min="6" max="10" step="0.25" value="7.75" oninput="sync('acidez')"><span class="ff-num" id="n-acidez">7,75</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-postgusto">Post gusto</label><input type="range" id="sl-postgusto" min="6" max="10" step="0.25" value="8" oninput="sync('postgusto')"><span class="ff-num" id="n-postgusto">8,00</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-sabor">Sabor</label><input type="range" id="sl-sabor" min="6" max="10" step="0.25" value="7.75" oninput="sync('sabor')"><span class="ff-num" id="n-sabor">7,75</span></div>
+
+    <hr class="divider">
+    <div class="score-row">
+      <label for="inp-score">Puntuación</label>
+      <input type="number" id="inp-score" min="60" max="100" step="0.25" value="84.25" oninput="syncScore()">
+      <span class="pt">PT</span>
+    </div>
+    <p class="score-hint">Puntuación total del producto (60–100)</p>
+
+    <button class="gen-btn" onclick="generateCode()">⬇ Generar código para Odoo</button>
+
+    <div class="code-section" id="code-section">
+      <div class="code-label">Código — pegar en bloque HTML de Odoo</div>
+      <div class="code-box">
+        <textarea id="code-out" readonly spellcheck="false"></textarea>
+        <button class="copy-btn" onclick="copyCode()">Copiar</button>
+      </div>
+      <div class="copy-ok" id="copy-ok">✓ Copiado al portapapeles</div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="chip"><div class="chip-swatch" style="background:#4F6045"></div><div class="chip-info"><div class="chip-name">Green Coffee</div><div class="chip-hex">#4F6045</div></div></div>
+    <div class="chip"><div class="chip-swatch" style="background:#D49C36"></div><div class="chip-info"><div class="chip-name">Sour</div><div class="chip-hex">#D49C36</div></div></div>
+    <div class="chip"><div class="chip-swatch" style="background:#F4643F"></div><div class="chip-info"><div class="chip-name">Sweet</div><div class="chip-hex">#F4643F</div></div></div>
+    <div class="chip"><div class="chip-swatch" style="background:#6C1916"></div><div class="chip-info"><div class="chip-name">Spices</div><div class="chip-hex">#6C1916</div></div></div>
+    <div class="chip"><div class="chip-swatch" style="background:#B84D2F"></div><div class="chip-info"><div class="chip-name">Roasted</div><div class="chip-hex">#B84D2F</div></div></div>
+    <div class="chip"><div class="chip-swatch" style="background:#91A493"></div><div class="chip-info"><div class="chip-name">Beany</div><div class="chip-hex">#91A493</div></div></div>
+  </div>
+
+  <div class="instructions">
+    <h2>Cómo usar</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Elige el color</strong>Verde para la mayoría de cafés, Naranja para perfiles especiales.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Ajusta los valores</strong>Mueve los sliders para cada atributo (escala 6–10).</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Genera el código</strong>Pulsa el botón. El HTML con el gráfico se genera solo.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Pega en Odoo</strong>Bloque HTML personalizado en la página del producto.</div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const SCHEMES = {
+  verde: {
+    bg:'#4F6045',petals:'#D49C36',petalAlpha:'0.90',
+    grid:'rgba(255,255,255,0.28)',gridFaint:'rgba(255,255,255,0.10)',
+    labelName:'rgba(255,255,255,0.92)',labelValue:'#E8B040',
+    scorePre:'#D49C36',scoreNum:'#D49C36',dot:'#D49C36',
+  },
+  naranja: {
+    bg:'#F4643F',petals:'#6C1916',petalAlpha:'0.93',
+    grid:'rgba(255,255,255,0.35)',gridFaint:'rgba(255,255,255,0.14)',
+    labelName:'rgba(255,255,255,0.95)',labelValue:'rgba(255,255,255,0.90)',
+    scorePre:'#4A100E',scoreNum:'#4A100E',dot:'#D49C36',
+  },
+};
+let currentScheme='verde';
+const D={aroma:7.5,cuerpo:7.75,acidez:7.75,postgusto:8,sabor:7.75,score:84.25};
+const CX=288,CY=308,R=172;
+const AXES=[
+  {k:'aroma',lbl:'AROMA',deg:-90},
+  {k:'cuerpo',lbl:'CUERPO',deg:-18},
+  {k:'acidez',lbl:'ACIDEZ',deg:54},
+  {k:'postgusto',lbl:'POST GUSTO',deg:126},
+  {k:'sabor',lbl:'SABOR',deg:198},
+];
+
+function rad(d){return d*Math.PI/180}
+function pt(deg,r){return[CX+r*Math.cos(rad(deg)),CY+r*Math.sin(rad(deg))]}
+function fmt(v){return v%1===0?v.toFixed(0):v.toFixed(2).replace('.',',')}
+function f(n){return n.toFixed(1)}
+
+function petal(deg,r){
+  const a=rad(deg),dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx;
+  const tx=CX+r*dx,ty=CY+r*dy,hw=r*0.38;
+  const[a1x,a1y]=[CX+r*.18*dx,CY+r*.18*dy];
+  const[a2x,a2y]=[CX+r*.72*dx,CY+r*.72*dy];
+  return `M${CX} ${CY}`
+    +` C${f(a1x+hw*px)} ${f(a1y+hw*py)},${f(a2x+hw*px)} ${f(a2y+hw*py)},${f(tx)} ${f(ty)}`
+    +` C${f(a2x-hw*px)} ${f(a2y-hw*py)},${f(a1x-hw*px)} ${f(a1y-hw*py)},${CX} ${CY}`;
+}
+
+function draw(){
+  const S=SCHEMES[currentScheme];
+  const ns='http://www.w3.org/2000/svg';
+  function mk(t,a,txt){const e=document.createElementNS(ns,t);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e}
+  const svg=document.getElementById('ff-svg');
+  svg.innerHTML='';
+  const outerPts=AXES.map(a=>pt(a.deg,R));
+  const innerPts=AXES.map(a=>pt(a.deg,R*.46));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R,fill:'none',stroke:S.grid,'stroke-width':'1.3'}));
+  [7,8,9].forEach(v=>svg.appendChild(mk('circle',{cx:CX,cy:CY,r:v/10*R,fill:'none',stroke:S.gridFaint,'stroke-width':'0.7'})));
+  svg.appendChild(mk('polygon',{points:outerPts.map(p=>p.join(',')).join(' '),fill:'none',stroke:S.grid,'stroke-width':'1.3'}));
+  svg.appendChild(mk('polygon',{points:innerPts.map(p=>p.join(',')).join(' '),fill:'none',stroke:S.gridFaint,'stroke-width':'0.7'}));
+  outerPts.forEach(([x,y])=>svg.appendChild(mk('line',{x1:CX,y1:CY,x2:x,y2:y,stroke:S.grid,'stroke-width':'1.1'})));
+  AXES.forEach(ax=>svg.appendChild(mk('path',{d:petal(ax.deg,D[ax.k]/10*R),fill:S.petals,opacity:S.petalAlpha})));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:5.5,fill:S.dot}));
+  const LR=R+38;
+  AXES.forEach(ax=>{
+    const[lx,ly]=pt(ax.deg,LR);
+    const cosA=Math.cos(rad(ax.deg)),sinA=Math.sin(rad(ax.deg));
+    let anchor='middle',xo=0;
+    if(cosA>0.22){anchor='start';xo=6}
+    if(cosA<-0.22){anchor='end';xo=-6}
+    const yShift=sinA<-0.4?-14:0;
+    svg.appendChild(mk('text',{x:lx+xo,y:ly+yShift-3,'text-anchor':anchor,fill:S.labelName,'font-family':"'Albert Sans',sans-serif",'font-size':'13.5','letter-spacing':'0.1em'},ax.lbl));
+    svg.appendChild(mk('text',{x:lx+xo,y:ly+yShift+15,'text-anchor':anchor,fill:S.labelValue,'font-family':"'Albert Sans',sans-serif",'font-size':'12.5','font-weight':'500'},fmt(D[ax.k])));
+  });
+  svg.appendChild(mk('text',{x:20,y:54,fill:S.scorePre,'font-family':"'Albert Sans',sans-serif",'font-size':'18','font-weight':'300','letter-spacing':'0.14em'},'PUNTUACIÓN:'));
+  svg.appendChild(mk('text',{x:20,y:93,fill:S.scoreNum,'font-family':"'Albert Sans',sans-serif",'font-size':'37','font-weight':'300','letter-spacing':'0.04em'},`${fmt(D.score)} PT`));
+}
+
+function setScheme(s){
+  currentScheme=s;
+  document.getElementById('chart-box').style.background=SCHEMES[s].bg;
+  document.querySelectorAll('.sch-btn').forEach(b=>b.classList.toggle('active',b.classList.contains(s)));
+  draw();
+}
+function sync(k){D[k]=parseFloat(document.getElementById('sl-'+k).value);document.getElementById('n-'+k).textContent=fmt(D[k]);draw()}
+function syncScore(){D.score=parseFloat(document.getElementById('inp-score').value)||0;draw()}
+
+function generateCode(){
+  const S=SCHEMES[currentScheme];
+  const clone=document.getElementById('ff-svg').cloneNode(true);
+  clone.removeAttribute('id');
+  clone.setAttribute('style','width:100%;height:auto;display:block');
+  const st=document.createElementNS('http://www.w3.org/2000/svg','style');
+  st.textContent="@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap');";
+  clone.insertBefore(st,clone.firstChild);
+  const html=`<div style="background:${S.bg};border-radius:12px;padding:16px;max-width:520px;margin:0 auto;">\n${clone.outerHTML}\n</div>`;
+  document.getElementById('code-out').value=html;
+  document.getElementById('code-section').classList.add('visible');
+  document.getElementById('code-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function copyCode(){
+  navigator.clipboard.writeText(document.getElementById('code-out').value).then(()=>{
+    const ok=document.getElementById('copy-ok');ok.style.display='block';
+    setTimeout(()=>ok.style.display='none',2500);
+  }).catch(()=>{document.getElementById('code-out').select();document.execCommand('copy')});
+}
+
+draw();
+</script>
+</body>
+</html>
