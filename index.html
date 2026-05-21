@@ -54,8 +54,11 @@ main{max-width:1060px;margin:0 auto;padding:40px 32px;display:grid;grid-template
 .score-row .pt{font-size:.75rem;color:var(--muted)}
 .score-hint{font-size:.7rem;color:var(--muted);margin-left:96px;margin-bottom:20px}
 
-.gen-btn{width:100%;background:var(--green-dark);color:#fff;border:none;border-radius:8px;padding:11px 16px;font-size:.75rem;font-family:'Albert Sans',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-row{display:flex;gap:8px}
+.gen-btn{flex:1;background:var(--green-dark);color:#fff;border:none;border-radius:8px;padding:11px 14px;font-size:.75rem;font-family:'Albert Sans',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:6px}
 .gen-btn:hover{opacity:.85}
+.svg-btn{flex-shrink:0;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;font-size:.75rem;font-family:'Albert Sans',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:var(--text);transition:background .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.svg-btn:hover{background:var(--light);border-color:#c8c4bc}
 
 .code-section{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 .code-section.visible{display:block}
@@ -125,7 +128,10 @@ main{max-width:1060px;margin:0 auto;padding:40px 32px;display:grid;grid-template
     </div>
     <p class="score-hint">Puntuación total del producto (60–100)</p>
 
-    <button class="gen-btn" onclick="generateCode()">⬇ Generar código para Odoo</button>
+    <div class="btn-row">
+      <button class="gen-btn" onclick="generateCode()">⬇ Código Odoo</button>
+      <button class="svg-btn" onclick="downloadSVG()">↓ SVG</button>
+    </div>
 
     <div class="code-section" id="code-section">
       <div class="code-label">Código — pegar en bloque HTML de Odoo</div>
@@ -250,6 +256,27 @@ function generateCode(){
   document.getElementById('code-section').classList.add('visible');
   document.getElementById('code-section').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+function downloadSVG(){
+  const S=SCHEMES[currentScheme];
+  const clone=document.getElementById('ff-svg').cloneNode(true);
+  clone.removeAttribute('id');
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  clone.setAttribute('style','background:'+S.bg);
+  // embed font
+  const st=document.createElementNS('http://www.w3.org/2000/svg','style');
+  st.textContent="@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap');";
+  clone.insertBefore(st,clone.firstChild);
+  const blob=new Blob([clone.outerHTML],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const scheme=currentScheme;
+  const vals=[D.aroma,D.cuerpo,D.acidez,D.postgusto,D.sabor].map(v=>v.toFixed(2).replace('.','')).join('-');
+  a.href=url;
+  a.download=`frutto-radar-${scheme}-${vals}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function copyCode(){
   navigator.clipboard.writeText(document.getElementById('code-out').value).then(()=>{
     const ok=document.getElementById('copy-ok');ok.style.display='block';
