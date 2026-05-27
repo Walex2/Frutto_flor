@@ -114,11 +114,11 @@ main{max-width:1060px;margin:0 auto;padding:40px 32px;display:grid;grid-template
       </button>
     </div>
 
-    <div class="ff-row"><div class="ff-dot"></div><label for="sl-aroma">Aroma</label><input type="range" id="sl-aroma" min="6" max="10" step="0.25" value="7.5" oninput="sync('aroma')"><span class="ff-num" id="n-aroma">7,50</span></div>
-    <div class="ff-row"><div class="ff-dot"></div><label for="sl-cuerpo">Cuerpo</label><input type="range" id="sl-cuerpo" min="6" max="10" step="0.25" value="7.75" oninput="sync('cuerpo')"><span class="ff-num" id="n-cuerpo">7,75</span></div>
-    <div class="ff-row"><div class="ff-dot"></div><label for="sl-acidez">Acidez</label><input type="range" id="sl-acidez" min="6" max="10" step="0.25" value="7.75" oninput="sync('acidez')"><span class="ff-num" id="n-acidez">7,75</span></div>
-    <div class="ff-row"><div class="ff-dot"></div><label for="sl-postgusto">Post gusto</label><input type="range" id="sl-postgusto" min="6" max="10" step="0.25" value="8" oninput="sync('postgusto')"><span class="ff-num" id="n-postgusto">8,00</span></div>
-    <div class="ff-row"><div class="ff-dot"></div><label for="sl-sabor">Sabor</label><input type="range" id="sl-sabor" min="6" max="10" step="0.25" value="7.75" oninput="sync('sabor')"><span class="ff-num" id="n-sabor">7,75</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-aroma">Aroma</label><input type="range" id="sl-aroma" min="5.5" max="9.5" step="0.25" value="7.5" oninput="sync('aroma')"><span class="ff-num" id="n-aroma">7,50</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-cuerpo">Cuerpo</label><input type="range" id="sl-cuerpo" min="5.5" max="9.5" step="0.25" value="7.75" oninput="sync('cuerpo')"><span class="ff-num" id="n-cuerpo">7,75</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-acidez">Acidez</label><input type="range" id="sl-acidez" min="5.5" max="9.5" step="0.25" value="7.75" oninput="sync('acidez')"><span class="ff-num" id="n-acidez">7,75</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-postgusto">Post gusto</label><input type="range" id="sl-postgusto" min="5.5" max="9.5" step="0.25" value="8" oninput="sync('postgusto')"><span class="ff-num" id="n-postgusto">8,00</span></div>
+    <div class="ff-row"><div class="ff-dot"></div><label for="sl-sabor">Sabor</label><input type="range" id="sl-sabor" min="5.5" max="9.5" step="0.25" value="7.75" oninput="sync('sabor')"><span class="ff-num" id="n-sabor">7,75</span></div>
 
     <hr class="divider">
     <div class="score-row">
@@ -217,7 +217,11 @@ function draw(){
   svg.appendChild(mk('polygon',{points:outerPts.map(p=>p.join(',')).join(' '),fill:'none',stroke:S.grid,'stroke-width':'1.3'}));
   svg.appendChild(mk('polygon',{points:innerPts.map(p=>p.join(',')).join(' '),fill:'none',stroke:S.gridFaint,'stroke-width':'0.7'}));
   outerPts.forEach(([x,y])=>svg.appendChild(mk('line',{x1:CX,y1:CY,x2:x,y2:y,stroke:S.grid,'stroke-width':'1.1'})));
-  AXES.forEach(ax=>svg.appendChild(mk('path',{d:petal(ax.deg,D[ax.k]/10*R),fill:S.petals,opacity:S.petalAlpha})));
+  AXES.forEach(ax=>{
+    const norm=Math.pow((D[ax.k]-5.5)/(9.5-5.5),0.85); // normalized + slight power curve
+    const r=Math.max(0.08,norm)*R;
+    svg.appendChild(mk('path',{d:petal(ax.deg,r),fill:S.petals,opacity:S.petalAlpha}));
+  });
   svg.appendChild(mk('circle',{cx:CX,cy:CY,r:5.5,fill:S.dot}));
   const LR=R+38;
   AXES.forEach(ax=>{
